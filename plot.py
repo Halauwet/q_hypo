@@ -1,3 +1,4 @@
+import os
 import time
 import math
 from subprocess import Popen
@@ -5,25 +6,25 @@ from bin.crossection import crossection_strike_dip, crossection_strike_line, cro
 from bin.layout import set_pos, set_legend, mag_scale
 from bin.reformat_data import *  # REFORMAT GANTI DENGAN MODUL "DATA_RFW"
 
-# baca parameter input (tambah jenis input data dari SDIGB (default atau hypodd)) reformat datetime satu variabel
-# baca data output ke datatmp (tambah output waktu start dan end) konversi waktu ke detik, start time - 2 jam
 parameter = 'parameter.inp'
-fileoutput = 'bin\/plot.bat'
-legend = 'bin\/legenda.bat'
-datagempa = 'data\/hypocenter.dat'
-datadirasakan = 'data\/dirasakan.dat'
-tmpdata = 'tmp\/tmpdata.dat'
-tmpdirasakan = 'tmp\/tmpdirasakan.dat'
+fileoutput = os.path.join('bin', 'plot.bat')
+legend = os.path.join('bin', 'legenda.bat')
+datagempa = os.path.join('data', 'hypocenter.dat')
+datadirasakan = os.path.join('data', 'dirasakan.dat')
+tmpdata = os.path.join('tmp', 'tmpdata.dat')
+tmpdirasakan = os.path.join('tmp', 'tmpdirasakan.dat')
+
 # Parameter Legenda + psscale depth
-num_M = 5  # banyak magnitudo pada legend
+num_M = 5  # jumlah magnitudo pada legend
 min_M = 3  # minimun magnitudo
-legenda = 'tmp\/legenda'
+legenda = os.path.join('tmp', 'legenda')
+
 title = ''
 fromdate = ''
 todate = ''
 datasource = ''
 area = 1
-input = 0
+inp_type = 0
 fps = 10
 lon_center = 0
 lat_center = 0
@@ -62,25 +63,29 @@ maxelev = 0
 maxdepth = 0
 M_scale = 'quadrat'  # option: linear or quadrat
 M_linear_size = 0.044  # set linear mag multiplier (same as legend.bat value)
-plot_animasi = 'NO'
+plot_animasi = 'NO'  # TODO: change option using flag
 plot_crossect = 'NO'
 plot_dirasakan = 'NO'
 plot_topo = 'NO'
 dpi = 512
+
 print('Epicenter Animation Generator')
 print('by eQ H')
 print('--------------------------------------------------------')
 print('')
-# baca isi file input dan buka file output
+
 file = open(parameter, 'r')
 baris = file.readlines()
 for i in range(len(baris)):
     baris[i] = baris[i].split()
 file.close()
+
 i = 0
 while i < len(baris):
+
     if len(baris[i]) > 0 and baris[i][0] == 'Title':
         title = ' '.join(baris[i + 1])
+
     if len(baris[i]) > 0 and baris[i][0] == 'Plot_Area':
         area = int(baris[i + 3][0])
         if area == 0:
@@ -92,40 +97,53 @@ while i < len(baris):
             right_lon = ('%.4f' % float(baris[i + 4][1]))
             bot_lat = ('%.4f' % float(baris[i + 4][2]))
             up_lat = ('%.4f' % float(baris[i + 4][3]))
+
     if len(baris[i]) > 0 and baris[i][0] == 'From_Date':
         fromdate = ' '.join(baris[i + 1])
+
     if len(baris[i]) > 0 and baris[i][0] == 'To_Date':
         todate = ' '.join(baris[i + 1])
+
     if len(baris[i]) > 0 and baris[i][0] == 'Input_Data':
-        input = int(baris[i + 1][0])
+        inp_type = int(baris[i + 1][0])
+
     if len(baris[i]) > 0 and baris[i][0] == 'Plot_Animasi' and baris[i + 1][0] == 'Y' or \
             len(baris[i]) > 0 and baris[i][0] == 'Plot_Animasi' and baris[i + 1][0] == 'y':
         plot_animasi = 'YES'
+
     if len(baris[i]) > 0 and baris[i][0] == 'Plot_Dirasakan' and baris[i + 1][0] == 'Y' or len(baris[i]) > 0 and \
             baris[i][0] == 'Plot_Dirasakan' and baris[i + 1][0] == 'y':
         plot_dirasakan = 'YES'
+
     if len(baris[i]) > 0 and baris[i][0] == 'Durasi_Animasi':
         dur = int(baris[i + 1][0])
+
     if len(baris[i]) > 0 and baris[i][0] == 'Frame_per_second':
         fps = int(baris[i + 1][0])
+
     if len(baris[i]) > 0 and baris[i][0] == 'Convert':
         tzsign = baris[i + 1][0]
         tzone = int(baris[i + 1][1])
         tzname = baris[i + 1][2]
+
     if len(baris[i]) > 0 and baris[i][0] == 'Frekuensi_waktu':
         periode = baris[i + 1][0]
+
     if len(baris[i]) > 0 and baris[i][0] == 'Plot_Crosssection?' and baris[i + 1][0] == 'Y' or len(baris[i]) > 0 and \
             baris[i][0] == 'Plot_Crosssection?' and baris[i + 1][0] == 'y':
         plot_crossect = 'YES'
+
     if len(baris[i]) > 0 and baris[i][0] == 'Mainshock_Hypocenter':
-        lon = (('%.4f') % float(baris[i + 1][0]))
-        lat = (('%.4f') % float(baris[i + 1][1]))
-        depth = (('%.2f') % float(baris[i + 1][2]))
+        lon = ('%.4f' % float(baris[i + 1][0]))
+        lat = ('%.4f' % float(baris[i + 1][1]))
+        depth = ('%.2f' % float(baris[i + 1][2]))
+
     if len(baris[i]) > 0 and baris[i][0] == 'Mag_Symbol':
         M_scale = baris[i + 1][0]
-        M_linear_size = (('%.4f') % float(baris[i + 2][0]))
+        M_linear_size = ('%.4f' % float(baris[i + 2][0]))
+
     if len(baris[i]) > 0 and baris[i][0] == 'Magnitude':
-        mag = (('%.1f') % float(baris[i + 1][0]))
+        mag = ('%.1f' % float(baris[i + 1][0]))
         mtype = baris[i + 1][1]
         if M_scale == 'linear':
             epic_size = float(mag) * float(M_linear_size)
@@ -136,6 +154,7 @@ while i < len(baris):
             print()
             print('Periksa tipe ukuran simbol magnitudo (linear or quadrat)')
             print()
+
     if len(baris[i]) > 0 and baris[i][0] == 'Nodal':
         strike1 = baris[i + 1][0]
         dip1 = baris[i + 1][1]
@@ -143,44 +162,57 @@ while i < len(baris):
         strike2 = baris[i + 2][0]
         dip2 = baris[i + 2][1]
         slip2 = baris[i + 2][2]
+
     if len(baris[i]) > 0 and baris[i][0] == 'Crossection_Length':
         cslength = int(baris[i + 1][0])
         cswidth = cslength / 2
     # cslength = panjang patahan; cswidth = 1/2 panjang patahan ke kiri + 1/2 panjang patahan ke kanan)
+
     if len(baris[i]) > 0 and baris[i][0] == 'Max':
         maxdepth = baris[i + 1][0]
+
     if len(baris[i]) > 0 and baris[i][0] == '#Max':
         maxdepth = int(math.ceil(float(depth) * 2 / 50)) * 50
+
     if len(baris[i]) > 0 and baris[i][0] == 'Plot_Elevation' and baris[i + 1][0] == 'Y' or len(baris[i]) > 0 and \
             baris[i][0] == 'Plot_Elevation' and baris[i + 1][0] == 'y':
         plot_topo = 'YES'
         maxelev = baris[i + 1][1]
+
     if len(baris[i]) > 0 and baris[i][0] == 'Data_source':
         datasource = ' '.join(baris[i + 1])
+
     i += 1
+
 print(title)
 print('')
-if input == 0:
+if inp_type == 0:
     # refromat data
     # if plot_dirasakan=='YES':
     ot_start, ot_stop, jumlah_dirasakan = sdigb_to_geoq(datadirasakan, tmpdirasakan, tzsign, tzone, tzname)
     ot_start, ot_stop, jumlah_event = sdigb_to_geoq(datagempa, tmpdata, tzsign, tzone, tzname)
-elif input == 1:
+
+elif inp_type == 1:
     if plot_dirasakan == 'YES':
         ot_stop, ot_start, jumlah_dirasakan = hypodd_to_geoq(datadirasakan, tmpdirasakan, tzsign, tzone, tzname)
     ot_stop, ot_start, jumlah_event = hypodd_to_geoq(datagempa, tmpdata, tzsign, tzone, tzname)
-elif input == 2:
+
+elif inp_type == 2:
     if plot_dirasakan == 'YES':
         ot_start, ot_stop, jumlah_dirasakan = ascii_to_geoq(datadirasakan, tmpdirasakan, tzsign, tzone, tzname)
     ot_start, ot_stop, jumlah_event = ascii_to_geoq(datagempa, tmpdata, tzsign, tzone, tzname)
+
 else:
+
     print('Input data default')
     if plot_dirasakan == 'YES':
         ot_start, ot_stop, jumlah_dirasakan = sdigb_to_geoq(datadirasakan, tmpdirasakan, tzsign, tzone, tzname)
     ot_start, ot_stop, jumlah_event = sdigb_to_geoq(datagempa, tmpdata, tzsign, tzone, tzname)
+
 eq_period = ot_stop - ot_start
 # HITUNG Frekuensi Gempa/periode waktu
 # lblperiode='Periode kurang'
+
 if periode == 'hari':
     tab_data = '$4'
     lblperiode = 'Tanggal (UTC)'
@@ -191,7 +223,8 @@ elif periode == 'tahun':
     tab_data = '$2'
     lblperiode = 'Tahun'
 else:
-    lblperiode = 'Periode kurang'
+    lblperiode = 'Periode kurang'  # TODO: plot time period histogram using timeseries
+
 if ot_start > ot_stop:
     n = ot_start
     ot_start = ot_stop
@@ -220,6 +253,7 @@ if dur > 300:
     print('durasi animasi > 5menit, butuh waktu lama rendering.')
     print('stop proses (ctrl+c) dan kecilkan Durasi_Animasi pada parameter.inp untuk mempercepat rendering.')
     print()
+
 if plot_animasi == 'YES':
     if plot_crossect == 'NO':
         if dur <= 12:
@@ -283,7 +317,8 @@ if plot_crossect == 'YES':
     file.close()
     # hitung batasan peta
     # (Diameter Peta / 2 (degree))
-    # if startlon1 < ll or startlon2 < ll or endlon1 > rl or endlon2 > rl or startlat1 > ul or startlat2 > ul or endlat1 < bl or endlat2 < bl:
+    # if startlon1 < ll or startlon2 < ll or endlon1 > rl or endlon2 > rl or startlat1 > ul or startlat2 > ul or
+    # endlat1 < bl or endlat2 < bl:
     print('Map area automatic from mainshock')
     mapoffs = int(math.ceil(float(cslength) / 222.7))
     rl = float(lon) + mapoffs
@@ -309,15 +344,15 @@ if plot_crossect == 'YES':
     print('')
     print('CROSS SECTION PARAMETER:')
     print('Koordinat Epicenter= %f %f %f' % (float(lat), float(lon), float(depth)))
-    print('Magnitudo = %s' % (mag))
+    print('Magnitudo = %s' % mag)
     print('Nodal Plane 1 = %3i %2i %3i' % (int(strike1), int(dip1), int(slip1)))
     print('Nodal Plane 2 = %3i %2i %3i' % (int(strike2), int(dip2), int(slip2)))
     print('Batas koordinat= %3.2f %3.2f %2.2f %2.2f' % (rl, ll, ul, bl))
-    print('Crosssection A-B = %s' % (str1))
-    print('Crosssection C-B = %s' % (str2))
-    print('DIP Crosssection A-B = %s' % (dp1))
-    print('DIP Crosssection C-B = %s' % (dp2))
-    print('Plot Topography line = %s' % (plot_topo))
+    print('Crosssection A-B = %s' % str1)
+    print('Crosssection C-B = %s' % str2)
+    print('DIP Crosssection A-B = %s' % dp1)
+    print('DIP Crosssection C-B = %s' % dp2)
+    print('Plot Topography line = %s' % plot_topo)
     file = open(legend, 'w')
     file.write('echo G -0.05>%L%' + '\n')
     file.write('echo N 5 >>%L%' + '\n')
@@ -350,6 +385,7 @@ if plot_crossect == 'YES':
     file.write('::echo D 0 1p>>%L%' + '\n')
     file.write('::echo V 0 1p>>%L%' + '\n')
     file.close()
+    
     file = open(fileoutput, 'w')
     file.write('@echo off' + '\n')
     file.write('REM echo EQ Map Generator' + '\n')
@@ -478,7 +514,7 @@ if plot_crossect == 'YES':
         file.write('grdtrack %track% -G%indo% | gawk "{print $3, $4/1000 }" > %trackCD%' + '\n')
     if plot_animasi == 'YES':
         file.write(':prepare' + '\n')
-        file.write('if exist frame\ (' + '\n')
+        file.write('if exist frame\\ (' + '\n')
         # file.write('echo deleting temporary frame'+'\n')
         file.write('rd /S /Q frame' + '\n')
         file.write(')' + '\n')
@@ -524,15 +560,13 @@ if plot_crossect == 'YES':
                     'print $6,$7,$8,' + M_size + '}" %tmpdata% | psxy -R -JM -Sc -C%D% -W0.2 -O -t' +
                     str(i) + ' -K >> %ps%' + '\n')
             i += transp_step
-        file.write(
-            'gawk "{if ($10<%starttime%) print $6,$7,$8,' + M_size + '}" %tmpdata% | psxy -R -JM -Sc -C%D% -W0.25 -O -t' + str(
-                transp_max) + ' -K >> %ps%' + '\n')
+        file.write('gawk "{if ($10<%starttime%) print $6,$7,$8,' + M_size + '}" %tmpdata% | psxy -R -JM -Sc -C%D% '
+                   '-W0.25 -O -t' + str(transp_max) + ' -K >> %ps%' + '\n')
     else:
         file.write(
             'gawk "{print $6,$7,$8,' + M_size + '}" %tmpdata% | psxy -R -JM -Sc -C%D% -W0.2 -O -K >> %ps%' + '\n')
-    file.write(
-        'gawk "{print ' + lon + ',' + lat + ',' + depth + ',$4,$5,$6,$7,$8,$9,$10,0,0,$13}" %focal% | psmeca -R -J -Sm' + str(
-            epic_size) + '/-1 -Z%D% -T0 -C -O -K >> %ps%' + '\n')
+    file.write('gawk "{print ' + lon + ',' + lat + ',' + depth + ',$4,$5,$6,$7,$8,$9,$10,0,0,$13}" %focal% | psmeca '
+               '-R -J -Sm' + str(epic_size) + '/-1 -Z%D% -T0 -C -O -K >> %ps%' + '\n')
     file.write('REM Cross Section Line AB (NP1)' + '\n')
     file.write('psxy %lineAB% -J -R -W0.3 -O -K >> %ps%' + '\n')
     file.write('pstext %text_A% -J -R -F+f8p,Helvetica+jCM -N -O -K >> %ps%' + '\n')
@@ -542,13 +576,14 @@ if plot_crossect == 'YES':
     file.write('pstext %text_C% -J -R -F+f8p,Helvetica+jCM -N -O -K >> %ps%' + '\n')
     file.write('pstext %text_D% -J -R -F+f8p,Helvetica+jCM -N -O -K >> %ps%' + '\n')
     if plot_animasi == 'YES':
-        file.write(
-            'gawk "BEGIN {print strftime(\\"%%d-%%m-%%Y %%H:%%M:%%S ' + tzname + '\\",%starttime%);}" | gawk "{print ' + str(
-                timepos_x) + ',' + str(timepos_y) + ',$0}" | pstext -R -JM -F+f6,Helvetica+jRT -O -K >> %ps%' + '\n')
-    # file.write('echo '+str(creditpos_x)+' '+str(creditpos_y)+' @@eqhalauwet | pstext -R -JM -F+f8,ZapfChancery-MediumItalic+jRB -O -K >> %ps%'+'\n')
+        file.write('gawk "BEGIN {print strftime(\\"%%d-%%m-%%Y %%H:%%M:%%S ' + tzname + '\\",%starttime%);}" | '
+                   'gawk "{print ' + str(timepos_x) + ',' + str(timepos_y) + ',$0}" | '
+                   'pstext -R -JM -F+f6,Helvetica+jRT -O -K >> %ps%' + '\n')
+    # file.write('echo '+str(creditpos_x)+' '+str(creditpos_y)+' @@eqhalauwet |
+    # pstext -R -JM -F+f8,ZapfChancery-MediumItalic+jRB -O -K >> %ps%'+'\n')
     file.write('REM Inset' + '\n')
-    file.write(
-        'pscoast -R%R_inset% -JM2 -Dh -W0.2p,black -Gwhite -S150/255/255 -B5::wsNE --MAP_FRAME_TYPE=plain --FONT_ANNOT_PRIMARY=5 -O -K >> %ps%' + '\n')
+    file.write('pscoast -R%R_inset% -JM2 -Dh -W0.2p,black -Gwhite -S150/255/255 -B5::wsNE --MAP_FRAME_TYPE=plain '
+               '--FONT_ANNOT_PRIMARY=5 -O -K >> %ps%' + '\n')
     file.write('REM psxy %subduction% -JM -R%R_inset% -W0.29 -Sf0.2c/0.03c+r+t -Gblack -O -K >> %ps%' + '\n')
     file.write('REM psxy %fault% -JM -R%R_inset% -W0.29 -O -K >> %ps%' + '\n')
     file.write('echo %llon% %blat% > ../tmp/box' + '\n')
@@ -563,19 +598,20 @@ if plot_crossect == 'YES':
     file.write('echo %title% >> ../tmp/judul' + '\n')
     file.write('pstext ../tmp/judul -R -J -F+f11p,AvantGarde-DemiOblique+jCM -M -O -K >> %ps%' + '\n')
     file.write('echo 0.5 0.7 %typemag% %mainmag% | pstext -J -R -F+f10p,Helvetica+jCM -O -K>> %ps%' + '\n')
-    file.write(
-        'gawk "{print 0.5,0.55,$3,$4,$5,$6,$7,$8,$9,$10,0,0,$13}" %focal% | psmeca -R -J -Sm0.7/-1 -C -Z%D% -T0 -N -O -K >> %ps%' + '\n')
-    file.write(
-        'echo 0.5 0.4 Fault plane1:  strike=%strike1%  dip=%dip1%  slip=%slip1% | pstext -J -R -F+f8p,Helvetica+jCM -O -K >> %ps%' + '\n')
-    file.write(
-        'echo 0.5 0.3 Fault plane2:  strike=%strike2%  dip=%dip2%  slip=%slip2% | pstext -J -R -F+f8p,Helvetica+jCM -O -K >> %ps%' + '\n')
+    file.write('gawk "{print 0.5,0.55,$3,$4,$5,$6,$7,$8,$9,$10,0,0,$13}" %focal% | psmeca -R -J -Sm0.7/-1 -C -Z%D% '
+               '-T0 -N -O -K >> %ps%' + '\n')
+    file.write('echo 0.5 0.4 Fault plane1:  strike=%strike1%  dip=%dip1%  slip=%slip1% | pstext -J -R '
+               '-F+f8p,Helvetica+jCM -O -K >> %ps%' + '\n')
+    file.write('echo 0.5 0.3 Fault plane2:  strike=%strike2%  dip=%dip2%  slip=%slip2% | pstext -J -R '
+               '-F+f8p,Helvetica+jCM -O -K >> %ps%' + '\n')
     # Plot Legenda
     jx_legend = 5  # lebar legenda
     R, J = set_legend(jx_legend, num_M, min_M, legenda, M_scale, float(M_linear_size))
-    file.write('psbasemap -R' + R + ' -JX' + J + ' -Bx --FONT_ANNOT_PRIMARY=6 -O -K -X' + str(
-        (8 - jx_legend) / 2) + ' -Y-1.4 >> %ps%' + '\n')
-    file.write('psscale -Dg' + str(jx_legend / 2) + '/' + str(jx_legend / 3) + '+w' + str(jx_legend * 0.7) + '/' + str(
-        jx_legend / 16) + '+e+macl+h+jCB -J -R -Bx100+l"Kedalaman (km)" -G0/500 -I1 --MAP_ANNOT_MIN_SPACING=0.1p --FONT_ANNOT_PRIMARY=6 --FONT_LABEL=6 -C%D% -N -O -K >> %ps%' + '\n')
+    file.write('psbasemap -R' + R + ' -JX' + J + ' -Bx --FONT_ANNOT_PRIMARY=6 -O -K -X' + str((8 - jx_legend) / 2) +
+               ' -Y-1.4 >> %ps%' + '\n')
+    file.write('psscale -Dg' + str(jx_legend / 2) + '/' + str(jx_legend / 3) + '+w' + str(jx_legend * 0.7) + '/' +
+               str(jx_legend / 16) + '+e+macl+h+jCB -J -R -Bx100+l"Kedalaman (km)" -G0/500 -I1 '
+               '--MAP_ANNOT_MIN_SPACING=0.1p --FONT_ANNOT_PRIMARY=6 --FONT_LABEL=6 -C%D% -N -O -K >> %ps%' + '\n')
     file.write('psxy %L% -R -J -Sc -W0.35 -O -K >> %ps%' + '\n')
     file.write('gawk "{print $1,$4,$5}" %L% | pstext -J -R -F+f6p,Helvetica,black+jCB -O -K >> %ps%' + '\n')
     # file.write('pslegend %L% -J -Dx0.25/0.1+w7.5/0.85i+jLB+l1.7 -O -K >> %ps%'+'\n')
@@ -761,10 +797,10 @@ if plot_crossect == 'YES':
         else:
             file.write('gawk "{print $9}" %tmpdata% | pshistogram -JX6/' + str(tinggi_graph) +
                        ' -W0.5+b -Gblue -L -BESwn -Bx+lMagnitude -By+l"Jumlah Gempabumi" '
-                        '--MAP_ANNOT_MIN_SPACING=0.1p --FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 '
-                        '--FONT_TITLE=10 -O -K >> %ps%' + '\n')
+                       '--MAP_ANNOT_MIN_SPACING=0.1p --FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 '
+                       '--FONT_TITLE=10 -O -K >> %ps%' + '\n')
         file.write('psbasemap -JX6/' + str(tinggi_graph) + ' -R/0/1/0/1 -Bg1x --MAP_ANNOT_MIN_SPACING=0.1p '
-                    '--FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K -Y' + str(graf_yoffset) +
+                   '--FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K -Y' + str(graf_yoffset) +
                    ' >> %ps%' + '\n')
         if plot_animasi == 'YES':
             file.write('gawk "{if ($10<=%starttime%) print $6}" %tmpdata% | pshistogram -JX6/' + str(tinggi_graph) +
@@ -903,7 +939,7 @@ else:
             lebar = str(19.412)
         else:
             lebar = str(20.2)
-        file.write('if exist frame\ (' + '\n')
+        file.write('if exist frame\\ (' + '\n')
         # file.write('echo deleting temporary frame'+'\n')
         file.write('rd /S /Q frame' + '\n')
         file.write(')' + '\n')
@@ -921,7 +957,8 @@ else:
         file.write('echo ^> 2 1.55 1 28 c > ../tmp/judul' + '\n')
         file.write('echo %title% >> ../tmp/judul' + '\n')
         file.write('pstext ../tmp/judul -R -J -F+f24p,NewCenturySchlbk-Italic,white+jCM -M -O -K >> %ps%' + '\n')
-        # file.write('echo 2 1.55 %title% | pstext -R -J -F+f24p,NewCenturySchlbk-Italic,white+jCM -N -O -K >> %ps%'+'\n')
+        # file.write('echo 2 1.55 %title% |
+        # pstext -R -J -F+f24p,NewCenturySchlbk-Italic,white+jCM -N -O -K >> %ps%'+'\n')
         file.write(
             'echo 2 1.15 %fromdate% | pstext -R -J -F+f18,NewCenturySchlbk-Italic,white+jCB -N -O -K >> %ps%' + '\n')
         file.write('echo 2 0.95 hingga | pstext -R -J -F+f18,NewCenturySchlbk-Italic,white+jCB -N -O -K >> %ps%' + '\n')
@@ -1003,7 +1040,8 @@ else:
             file.write(
                 'gawk "{print $6,$7,$8,' + M_size + '}" %tmpdirasakan% | '
                 'psxy -R -JM -Sa -C%D% -W0.5,white -O -K >> %ps%' + '\n')
-    # file.write('echo '+str(creditpos_x)+' '+str(creditpos_y)+' @@eqhalauwet | pstext -R -JM -F+f9,ZapfChancery-MediumItalic+jRB -O -K >> %ps%'+'\n')
+    # file.write('echo '+str(creditpos_x)+' '+str(creditpos_y)+' @@eqhalauwet |
+    # pstext -R -JM -F+f9,ZapfChancery-MediumItalic+jRB -O -K >> %ps%'+'\n')
     file.write(
         'psimage ../inc/logo.png -R -J -Dg' + str(kompas_x) + '/' + str(kompas_y) + '+w2.3c+jLT -K -O >> %ps%' + '\n')
     file.write(
@@ -1052,13 +1090,11 @@ else:
                 '-Z4 --MAP_ANNOT_MIN_SPACING=0.1p --FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K >> '
                                 '%ps%' + '\n')
         else:
-            file.write('gawk "{print $8}" %tmpdata% | pshistogram -JX6/' + str(
-                tinggi_graph) + ' -W20+b -Gblue -L  -BESwn -Bx+l"Kedalaman (km)" -By+l"Log(Jumlah Gempabumi)" -Z4 '
-                '--MAP_ANNOT_MIN_SPACING=0.1p --FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K >>'
-                ' %ps%' + '\n')
-        file.write(
-            'echo 0.9 -0.15 "by: @@eqhalauwet" | pstext -R -Bg1x -J -F+f9,ZapfChancery-MediumItalic+jLT -Y-' + str(
-                graf_yoffset) + ' -N -O >> %ps%' + '\n')
+            file.write('gawk "{print $8}" %tmpdata% | pshistogram -JX6/' + str(tinggi_graph) + ' -W20+b -Gblue -L '
+                       '-BESwn -Bx+l"Kedalaman (km)" -By+l"Log(Jumlah Gempabumi)" -Z4 --MAP_ANNOT_MIN_SPACING=0.1p '
+                       '--FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K >> %ps%' + '\n')
+        file.write('echo 0.9 -0.15 "by: @@eqhalauwet" | pstext -R -Bg1x -J -F+f9,ZapfChancery-MediumItalic+jLT -Y-' +
+                   str(graf_yoffset) + ' -N -O >> %ps%' + '\n')
     else:
         tinggi_graph = (tinggi_map - 2.9) / 3
         graf_yoffset = tinggi_graph + 1.45
@@ -1075,7 +1111,7 @@ else:
                        ' -W0.5+b -Gblue -L -BESwn -Bx+lMagnitude -By+l"Jumlah Gempabumi" --MAP_ANNOT_MIN_SPACING=0.1p '
                        '--FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K >> %ps%' + '\n')
         file.write('psbasemap -JX5/' + str(tinggi_graph) + ' -R/0/1/0/1 -Bg1x --MAP_ANNOT_MIN_SPACING=0.1p '
-                    '--FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K -Y' +
+                   '--FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K -Y' +
                    str(graf_yoffset) + ' >> %ps%' + '\n')
         if plot_animasi == 'YES':
             file.write('gawk "{if ($10<=%starttime%) print $8}" %tmpdata% | pshistogram -JX5/' + str(tinggi_graph) +
@@ -1084,25 +1120,25 @@ else:
                        ' %ps%' + '\n')
         else:
             file.write('gawk "{print $8}" %tmpdata% | pshistogram -JX5/' + str(tinggi_graph) + ' -W20+b -Gblue -L -Z4 '
-                        '-BESwn -Bx+l"Kedalaman (km)" -By+l"Log(Jumlah Gempabumi)" --MAP_ANNOT_MIN_SPACING=0.1p '
-                        '--FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K >> %ps%' + '\n')
+                       '-BESwn -Bx+l"Kedalaman (km)" -By+l"Log(Jumlah Gempabumi)" --MAP_ANNOT_MIN_SPACING=0.1p '
+                       '--FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K >> %ps%' + '\n')
         file.write('psbasemap -JX5/' + str(tinggi_graph) + ' -R/0/1/0/1 -Bg1x --MAP_ANNOT_MIN_SPACING=0.1p '
-                    '--FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K -Y' + str(graf_yoffset) +
+                   '--FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K -Y' + str(graf_yoffset) +
                    ' >> %ps%' + '\n')
         if plot_animasi == 'YES':
             ####
             file.write('gawk "{if ($10<=%starttime%) print ' + tab_data + '}" %tmpdata% | pshistogram -JX5/' +
                        str(tinggi_graph) + ' -W1+b -Gblue -L -BESwn -Bx+l"' + lblperiode + '" -By+l"Jumlah Gempabumi" '
-                        '-F --MAP_ANNOT_MIN_SPACING=0.1p --FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K  '
-                        '>> %ps%' + '\n')
+                       '-F --MAP_ANNOT_MIN_SPACING=0.1p --FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K  '
+                       '>> %ps%' + '\n')
         else:
             ####
             file.write('gawk "{print ' + tab_data + '}" %tmpdata% | pshistogram -JX5/' + str(tinggi_graph) + ' '
-            '-W1+b -Gblue -L -BESwn -Bx+l"' + lblperiode + '" -By+l"Jumlah Gempabumi" -F --MAP_ANNOT_MIN_SPACING=0.1p '
-            '--FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K >> %ps%' + '\n')
-        file.write(
-            'echo 0.9 -0.24 "by: @@eqhalauwet" | pstext -R -Bg1x -J -F+f9,ZapfChancery-MediumItalic+jLT -Y-' + str(
-                graf_yoffset * 2) + ' -N -O >> %ps%' + '\n')
+                       '-W1+b -Gblue -L -BESwn -Bx+l"' + lblperiode + '" -By+l"Jumlah Gempabumi" -F '
+                       '--MAP_ANNOT_MIN_SPACING=0.1p --FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 '
+                       '--FONT_TITLE=10 -O -K >> %ps%' + '\n')
+        file.write('echo 0.9 -0.24 "by: @@eqhalauwet" | pstext -R -Bg1x -J -F+f9,ZapfChancery-MediumItalic+jLT -Y-' +
+                   str(graf_yoffset * 2) + ' -N -O >> %ps%' + '\n')
     if plot_animasi == 'YES':
         file.write('psconvert %ps% -Tg -E' + str(dpi) + ' -P -A0.2 -Fframe/frame-%framenumber%' + '\n')
         file.write('goto loopplot' + '\n')
@@ -1110,8 +1146,8 @@ else:
         file.write('set /a framenumber = %framenumber% + 1' + '\n')
         file.write('if %framenumber% GTR %stopframe% goto renderplot' + '\n')
         file.write('pscoast -R%R% -JM' + str(jm) + ' -Dh -B2::WSne -G245/245/200 -S150/255/255 -W0.2p,black '
-                    '-Lg%x2%/%y2%+c-1+w%z2%k+l+ab+jTC -Tdg%x2%/%y2%+w1.2+f1+jBC --MAP_ANNOT_MIN_SPACING=0.1p '
-                    '--FONT_TITLE=10 --FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 -K > %ps%' + '\n')
+                   '-Lg%x2%/%y2%+c-1+w%z2%k+l+ab+jTC -Tdg%x2%/%y2%+w1.2+f1+jBC --MAP_ANNOT_MIN_SPACING=0.1p '
+                   '--FONT_TITLE=10 --FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 -K > %ps%' + '\n')
         file.write('psxy %subduction% -JM -R -W0.51 -Sf0.8i/0.08i+r+t -Gblack -O -K >> %ps%' + '\n')
         file.write('psxy %fault% -JM -R -W0.51 -O -K >> %ps%' + '\n')
         file.write('REM Data' + '\n')
@@ -1123,7 +1159,7 @@ else:
             'gawk "{print $6,$7,$8,' + M_size + '}" %tmpdata% | psxy -R -JM -Sc -C%D% -W0.25 -O -K >> %ps%' + '\n')
         if plot_dirasakan == 'YES':
             file.write('gawk "{print $6,$7,$8,' + M_size + '}" %tmpdirasakan% | psxy -R -JM -Sa -C%D% -W0.5,white '
-                        '-O -K >> %ps%' + '\n')
+                       '-O -K >> %ps%' + '\n')
         # file.write('echo '+str(creditpos_x)+' '+str(creditpos_y)+' @@eqhalauwet | pstext -R -JM -F+f9,ZapfChancery
         # -MediumItalic+jRB -O -K >> %ps%'+'\n')
         file.write('psimage ../inc/logo.png -R -J -Dg' + str(kompas_x) + '/' + str(
@@ -1136,7 +1172,7 @@ else:
         # file.write('echo '+str(skala_x)+' '+str(logo_y1)+' %title% | pstext -R -J
         # -F+f12p,NewCenturySchlbk-BoldItalic,black+jCB -G245/245/200 -N -O -K >> %ps%'+'\n')
         file.write('echo ' + str(skala_x) + ' ' + str(logo_y2) + ' %fromdate% hingga %todate% | pstext -R -J '
-                    '-F+f10,NewCenturySchlbk-BoldItalic,black+jCB -Gwhite -N -t20 -O -K >> %ps%' + '\n')
+                   '-F+f10,NewCenturySchlbk-BoldItalic,black+jCB -Gwhite -N -t20 -O -K >> %ps%' + '\n')
         # if plot_dirasakan=='NO':
         # file.write('echo '+str(skala_x)+' '+str(logo_y3)+' Jumlah gempabumi '+jumlah_event+' kejadian | pstext -R -J
         # -F+f9,NewCenturySchlbk-BoldItalic,black+jCM -Gwhite -N -t20 -O -K >> %ps%'+'\n')
@@ -1148,7 +1184,7 @@ else:
         else:
             file.write('echo ' + str(skala_x) + ' ' + str(logo_y3) + ' Jumlah gempabumi ' + jumlah_event +
                        ' kejadian, ' + jumlah_dirasakan + ' dilaporkan dirasakan oleh masyarakat | pstext -R -J '
-                        '-F+f9,NewCenturySchlbk-BoldItalic,black+jCM -Gwhite -N -t20 -O -K >> %ps%' + '\n')
+                       '-F+f9,NewCenturySchlbk-BoldItalic,black+jCM -Gwhite -N -t20 -O -K >> %ps%' + '\n')
         file.write(
             'pscoast -R%R_inset% -JM4 -Dh -W0.2p,black -Gwhite -S150/255/255 -B5::wsNE --MAP_FRAME_TYPE=plain '
             '--FONT_ANNOT_PRIMARY=6 -O -K >> %ps%' + '\n')
@@ -1158,7 +1194,7 @@ else:
             jm - jx_legend) + ' >> %ps%' + '\n')
         file.write('psscale -Dg' + str(jx_legend / 2) + '/' + str(jx_legend / 3) + '+w' + str(jx_legend * 0.8) + '/' +
                    str(jx_legend / 16) + '+e+macl+h+jCB -J -R -Bx100+l"Kedalaman (km)" -G0/500 -I1 '
-                    '--MAP_ANNOT_MIN_SPACING=0.1p --FONT_ANNOT_PRIMARY=6 --FONT_LABEL=6 -C%D% -O -K >> %ps%' + '\n')
+                   '--MAP_ANNOT_MIN_SPACING=0.1p --FONT_ANNOT_PRIMARY=6 --FONT_LABEL=6 -C%D% -O -K >> %ps%' + '\n')
         file.write('psxy %L% -R -J -Sc -W0.35 -O -K >> %ps%' + '\n')
         file.write('gawk "{print $1,$4,$5}" %L% | pstext -J -R -F+f6p,Helvetica,black+jCB -O -K >> %ps%' + '\n')
         file.write('REM psxy %subduction% -JM -R%R_inset% -W0.39 -Sf0.2c/0.03c+r+t -Gblack -O -K >> %ps%' + '\n')
@@ -1173,8 +1209,8 @@ else:
             tinggi_graph = (tinggi_map - 1.7) / 2
             graf_yoffset = tinggi_graph + 1.6
             file.write('psbasemap -JX6/' + str(tinggi_graph) + ' -R/0/1/0/1 -Bg1x --MAP_ANNOT_MIN_SPACING=0.1p '
-                        '--FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K -X' + str(
-                jm + 0.5) + ' >> %ps%' + '\n')
+                       '--FONT_ANNOT_PRIMARY=8 --FONT_LABEL=9 --FONT_TITLE=10 -O -K -X' + str(jm + 0.5) +
+                       ' >> %ps%' + '\n')
             if plot_animasi == 'YES':
                 file.write('gawk "{if ($10<=%starttime%) print $9}" %tmpdata% | pshistogram -JX6/' + str(tinggi_graph) +
                            ' -W0.5+b -Gblue -L -BESwn -Bx+lMagnitude -By+l"Jumlah Gempabumi" '
@@ -1255,6 +1291,7 @@ else:
     if plot_animasi == 'YES':
         file.write('REM rd /S /Q frame' + '\n')
     file.close()
+
 print("__________________________")
 print("")
 print("Writting code . . .")
