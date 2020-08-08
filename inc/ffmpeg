@@ -1,0 +1,4 @@
+ffmpeg -framerate 10 -i bin/frame/frame-%d.png -c:v libx264 -profile:v high -b:v 1000k -pix_fmt yuv420p -vf scale=5966x3910 output/animasi.mp4
+ffmpeg -framerate 10 -i bin/frame/frame-%d.png -c:v libx264 -profile:v high -b:v 1000k -pix_fmt yuv420p -vf scale=w=1920:h=1440 output/animasi.mp4
+ffmpeg -framerate 10 -i bin/frame/frame-%d.png -c:v libx264 -profile:v high -b:v 20000k -pix_fmt yuv420p -vf scale=w=1080:h=-1 output/animasi.mp4
+ffmpeg -framerate 10 -i bin/frame/frame-%d.png -c:v libx264 -profile:v high -crf 18 -pix_fmt yuv420p -vf scale=w=1080:h=-1 output/animasi.mp4

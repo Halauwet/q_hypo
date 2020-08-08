@@ -1,0 +1,67 @@
+Title
+Animasi Aktifitas Gempabumi Wilayah Maluku dan Sekitarnya
+
+From_Date
+22 Mei 2020
+
+To_Date
+28 Mei 2020
+
+Plot_Area (opsi, par,..) don't need to configure if using "Plot_Crosssection"
+(0 for input center and radius (km) from center -->> Center_Lon, Center_Lat, Radius (degree))
+(1 for input rectangular margin-->> Left_lon, Right_lon, Bottom_Lat, Up_Lat)
+1
+124 135 -10 0 #rectangular
+127.7 -3.75 2 #circular
+
+Mag_Symbol (linear/quadrat, multiplier for linear)
+linear
+0.044
+
+Input_Data (0 for input from SDIGB data, 1 for HypoDD.reloc data, 2 for ASCII data format: "Y M D h m s lat long depth mag) [0]
+0
+
+Plot_Animasi (Y/N) [N]
+y
+
+Plot_Dirasakan (Y/N) [N]
+n
+
+Durasi_Animasi (second)
+30
+
+Frame_per_second [10]
+1
+
+Convert to Local Time [Sign, Time_Zone, Zone_Name](uncomment '#" to convert origin time to local time)
++ 9 WIT
+
+Frekuensi_waktu (hari / bulan / tahun)
+hari
+
+
+______Plot Aftershock from a Fault Source (better using relocation data)
+Plot_Crosssection? (Y/N) [N]
+n
+
+Mainshock_Hypocenter (lon, lat, Depth)
+128.38 -3.549 10
+
+Magnitude (size, type)
+7.2 Mw
+
+Nodal (Strike, Dip, Slip)
+180 85 2
+90 88 175
+
+Crossection_Length (km) [200]
+80
+
+Max Depth (km) (uncomment '#" to define max depht crossec)
+50
+
+Plot_Elevation (Y/N, max_elev(km))
+y 3
+
+Data_source
+BMKG - Pusat Gempa Regional IX Ambon

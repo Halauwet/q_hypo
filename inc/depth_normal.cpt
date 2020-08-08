@@ -1,0 +1,8 @@
+# color palette for seismicity depend on depth 
+#z0 color z1 color 
+-3600 green -300.1  green 
+-300.1  yellow -60.1 yellow 
+-60.1 red 0.1 red 
+0.1 red 60.1 red 
+60.1 yellow 300.1 yellow  
+300.1 green 3600 green 
